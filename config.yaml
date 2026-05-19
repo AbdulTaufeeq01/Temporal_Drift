@@ -1,0 +1,154 @@
+# Experiment Configuration for Temporal Drift Study
+
+## Dataset Configuration
+dataset:
+  # Available: "synthetic", "diabetes", "credit_fraud", "lending_club"
+  name: "synthetic"
+  
+  # For synthetic data
+  synthetic:
+    n_samples_per_window: 1000
+    n_features: 10
+    n_windows: 10
+    drift_magnitude: 0.3  # 0.0 to 1.0
+    drift_type: "gradual"  # "gradual" or "abrupt"
+  
+  # For real datasets
+  real:
+    test_size: 0.2
+    random_state: 42
+
+## Time Window Configuration
+time_window:
+  n_windows: 10
+  window_size: null  # If null, will use n_windows to determine size
+  time_column: null  # Column name for time ordering
+
+## Drift Detection Configuration
+drift_detection:
+  n_bins: 10  # For discretization of continuous features
+  
+  metrics:
+    - psi
+    - kl
+    - ks_test
+    - js
+    - wasserstein
+  
+  thresholds:
+    psi:
+      no_drift: 0.1
+      moderate_drift: 0.25
+      significant_drift: 0.5
+    
+    kl:
+      threshold: 0.5
+    
+    ks_test:
+      p_value_threshold: 0.05
+
+## Model Configuration
+model:
+  # Available: "logistic", "random_forest", "xgboost"
+  types:
+    - "logistic"
+    - "random_forest"
+    - "xgboost"
+  
+  random_state: 42
+  
+  logistic:
+    max_iter: 1000
+    n_jobs: -1
+  
+  random_forest:
+    n_estimators: 100
+    n_jobs: -1
+  
+  xgboost:
+    n_estimators: 100
+    verbosity: 0
+
+## Retraining Strategies Configuration
+retraining_strategies:
+  # No retraining baseline
+  no_retrain:
+    enabled: true
+  
+  # Periodic retraining
+  periodic:
+    enabled: true
+    periods: [1, 2, 3]  # Retrain every K windows
+  
+  # Trigger-based retraining
+  trigger_based:
+    enabled: true
+    drift_metric: "psi"  # "psi", "kl", "ks_test"
+    threshold: 0.25
+  
+  # Sliding window retraining
+  sliding_window:
+    enabled: true
+    window_sizes: [1, 2, 3]  # Keep last N windows
+
+## Evaluation Configuration
+evaluation:
+  metrics:
+    - "accuracy"
+    - "f1"
+    - "auc_roc"
+    - "brier_score"
+  
+  degradation_threshold: 0.05  # 5% performance drop threshold
+  baseline_window: 0  # Reference window for degradation calculation
+  
+  # Correlation analysis
+  correlation:
+    drift_metrics: ["psi", "kl", "ks_test"]
+    perf_metrics: ["auc_roc", "f1"]
+    aggregation: "mean"  # "mean", "max", "median"
+
+## Visualization Configuration
+visualization:
+  output_dir: "reports/figures"
+  
+  plots:
+    feature_distributions:
+      enabled: true
+      top_n: 5
+    
+    drift_heatmap:
+      enabled: true
+      metric: "psi"
+    
+    performance_over_time:
+      enabled: true
+      metrics: ["auc_roc", "f1"]
+    
+    drift_trajectory:
+      enabled: true
+    
+    retraining_events:
+      enabled: true
+    
+    strategy_comparison:
+      enabled: true
+    
+    full_dashboard:
+      enabled: true
+
+## Output Configuration
+output:
+  data_dir: "data/processed"
+  report_dir: "reports"
+  figures_dir: "reports/figures"
+  
+  # Export options
+  export_drift_matrix: true
+  export_performance_results: true
+  export_strategy_comparison: true
+
+## Logging Configuration
+logging:
+  level: "INFO"  # "DEBUG", "INFO", "WARNING", "ERROR"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
